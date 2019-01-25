@@ -1,0 +1,54 @@
+#myDiv,.main-svg
+{
+  width:100%;
+}
+
+#input
+{
+  position:relative;
+  left:7.5%;
+  /* width:22.5%; */
+  height:20%;
+  border-style: solid;
+  border-color:black;
+  border-width:2px;
+  float:left;
+}
+
+#showID
+{
+  margin-left:5%;
+  margin-top:5%;
+  width:30%;
+}
+
+#container
+{
+width:75%;
+margin-left:12.5%;
+top:12.5%;
+}
+
+#info
+{
+  position:relative;
+  left:10%;
+  width:22.5%;
+  height:20%;
+  border-style: solid;
+  border-color:red;
+  border-width:2px;
+  float:left;
+}
+
+#output
+{
+  position:relative;
+  top:25%;
+  left:5%;
+  width:90%;
+  height:50%;
+  border-style: solid;
+  border-color:red;
+  border-width:2px;
+}
