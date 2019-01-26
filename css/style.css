@@ -33,12 +33,17 @@ top:12.5%;
 {
   position:relative;
   left:10%;
-  width:22.5%;
+  width:17.5%;
   height:20%;
   border-style: solid;
   border-color:red;
   border-width:2px;
   float:left;
+}
+
+#infoText1,#infoText2
+{
+  margin-left:5%;
 }
 
 #output

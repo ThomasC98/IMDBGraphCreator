@@ -2,7 +2,8 @@ $(function() {
 
   var proxy = 'https://cors-anywhere.herokuapp.com/'; // used to bypass browser CORS
   var myUrl = 'https://www.imdb.com/title/'; // IMDB's link to their show titles
-  var mapArray = new Array(); // Used to hold the arrays of each season
+  var mapArray = new Array(); // Used to hold the arrays of each season's scores
+  var showArray = new Array(); // Used to hold the arrays of each episode's score
   var seasons; // Used to hold the number of seasons
   var bar; // The increasing bar that show's load %
 
@@ -28,6 +29,7 @@ $(function() {
       bar.animate(.01);
       $("#myDiv").empty();
       mapArray = new Array();
+      showArray = new Array();
       findSeasonNums(proxy + myUrl + $("#showID").val());
     }
   });
@@ -53,15 +55,22 @@ $(function() {
     var data = new Array();
     var episode = 1;
 
+    var bestFit = findLineBestFit(showArray); // Returns two points
+    data.push(bestFit);
+
     for (var i = 0; i < mapArray.length; i++) {
       xVal = new Array();
       yVal = new Array();
+
       console.log("Season " + (i + 1) + " " + mapArray[i].size);
+
       for (var p = 0; p < mapArray[i].size; p++) {
         xVal.push(episode);
         yVal.push(mapArray[i].get(p));
         episode++;
       }
+
+      console.log(data);
       var spots = {
         x: xVal,
         y: yVal,
@@ -73,7 +82,9 @@ $(function() {
     }
 
     var layout = {};
-    Plotly.newPlot('myDiv', data, layout);
+    Plotly.newPlot('myDiv', data, layout, {
+      scrollZoom: true
+    });
     console.log("Done!");
   }
 
@@ -85,7 +96,7 @@ $(function() {
         var dfd = jQuery.Deferred();
         var episodeMap = fetchData(data);
         mapArray.push(episodeMap);
-        bar.animate(season/seasons);
+        bar.animate(season / seasons);
         return dfd.promise();
       }).then(function() {
         if (season != seasons + 1) {
@@ -93,7 +104,7 @@ $(function() {
         }
       });
     } else {
-      console.log(mapArray);
+      // console.log(mapArray);
       makeGraph(mapArray)
     }
   }
@@ -108,6 +119,7 @@ $(function() {
     for (var i = 0; i < split.length - 1; i++) {
       var rating = Number(split[i].substring(split[i].length - 22, split[i].length - 19));
       episodeMap.set(index, rating);
+      showArray.push(rating);
       index++;
       // console.log(rating);
     }
@@ -115,12 +127,18 @@ $(function() {
   }
 
   function findSeasonNums(url) {
+    console.log(url);
     var promise = $.get(url, function(data) {
       var dfd = jQuery.Deferred();
       // console.log("/title/" + $("#showID").val() + "/episodes?season=");
       var index = data.indexOf("/title/" + $("#showID").val() + "/episodes?season=");
       var numSeasons = data.substring(index + 30, index + 36).replace(/\D/g, '');;
       seasons = Number(numSeasons);
+      if (seasons == "0") {
+        console.log("Error Found: Single Season Swap")
+        seasons = 1;
+      }
+      console.log("Num Seasons = " + seasons);
       return dfd.promise();
     }).then(function() {
       var finalURL = proxy + myUrl + $("#showID").val() + "/episodes?season=";
@@ -128,41 +146,96 @@ $(function() {
     });
   }
 
+  // Below here is math JavaScript
 
+  // y = 0.03951x + 9.118182
+  // tt4508902
+  // Returns a data point for the Plotly graph that is the line of best fit
+  function findLineBestFit(scoreArray) {
+    var n = scoreArray.length;
+    var slope = solveSlope(scoreArray);
+    var yInter = ((scoreArray.reduce(add, 0) / n) - (slope * ((n * (n + 1)) / 2) / n));
 
+    var bestFit = {
+      x: [1, n],
+      y: [yInter, (slope * n) + yInter],
+      mode: 'lines',
+      name: "Best Fit"
+    };
 
-
-
-function init()
-{
-  bar = new ProgressBar.SemiCircle(container, {
-  strokeWidth: 6,
-  color: '#FFEA82',
-  trailColor: '#eee',
-  trailWidth: 1,
-  duration: 300,
-  svgStyle: null,
-  text: {
-    value: '',
-    alignToBottom: false
-  },
-  from: {color: '#FFEA82'},
-  to: {color: '#ED6A5A'},
-  // Set default step function for all animate calls
-  step: (state, bar) => {
-    bar.path.setAttribute('stroke', state.color);
-    var value = Math.round(bar.value() * 100);
-    if (value === 0) {
-      bar.setText('');
-    } else {
-      bar.setText(value);
-    }
-
-    bar.text.style.color = state.color;
+    return bestFit;
   }
-});
-bar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
-bar.text.style.fontSize = '2rem';
-}
+
+  function solveSlope(scores) {
+    // We need to solve for Sum(xy), n*xAvg*yAvg, Sum(x^2), n*xAvg^2
+    var n = scores.length;
+
+    var xSum = ((n * (n + 1)) / 2);
+
+    var xAvg = xSum / n;
+    var yAvg = scores.reduce(add, 0) / n;
+
+    // Sum(xy)
+    var multTogether = multSum(scores);
+
+    var avgMults = n * (xAvg * yAvg);
+
+    // Sum(x^2)
+    var xSquareSum = (n * (n + 1) * (2 * n + 1)) / 6;
+
+    var avgSquare = n * (Math.pow(xAvg, 2));
+
+    var slope = (multTogether - avgMults) / (xSquareSum - avgSquare);
+
+    return slope;
+  }
+
+  function multSum(scores) {
+    var total = 0;
+    for (var i = 0; i < scores.length; i++) {
+      total += (i + 1) * scores[i];
+    }
+    return total;
+  }
+
+  function add(a, b) {
+    return a + b;
+  }
+
+
+  function init() {
+    bar = new ProgressBar.SemiCircle(container, {
+      strokeWidth: 6,
+      color: '#FFEA82',
+      trailColor: '#eee',
+      trailWidth: 1,
+      duration: 300,
+      svgStyle: null,
+      text: {
+        value: '',
+        alignToBottom: false
+      },
+      from: {
+        color: '#FFEA82'
+      },
+      to: {
+        color: '#ED6A5A'
+      },
+      // Set default step function for all animate calls
+      step: (state, bar) => {
+        bar.path.setAttribute('stroke', state.color);
+        var value = Math.round(bar.value() * 100);
+        if (value === 0) {
+          bar.setText('');
+        } else {
+          bar.setText(value);
+        }
+
+        bar.text.style.color = state.color;
+      }
+    });
+    bar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
+    bar.text.style.fontSize = '2rem';
+  }
 
 });
