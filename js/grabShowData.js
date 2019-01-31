@@ -54,9 +54,20 @@ $(function() {
     var yVal;
     var data = new Array();
     var episode = 1;
+    var meanScore = Number((showArray.reduce(add, 0) / showArray.length).toFixed(2));
+    console.log(meanScore);
 
     var bestFit = findLineBestFit(showArray); // Returns two points
     data.push(bestFit);
+
+    var mean = {
+      x: [1, showArray.length],
+      y: [meanScore, meanScore],
+      mode: 'lines',
+      name: "Mean Rating"
+    };
+
+    data.push(mean);
 
     for (var i = 0; i < mapArray.length; i++) {
       xVal = new Array();
@@ -154,11 +165,12 @@ $(function() {
   function findLineBestFit(scoreArray) {
     var n = scoreArray.length;
     var slope = solveSlope(scoreArray);
+
     var yInter = ((scoreArray.reduce(add, 0) / n) - (slope * ((n * (n + 1)) / 2) / n));
 
     var bestFit = {
       x: [1, n],
-      y: [yInter, (slope * n) + yInter],
+      y: [Number(yInter.toFixed(2)), Number(((slope * n) + yInter).toFixed(2))],
       mode: 'lines',
       name: "Best Fit"
     };
