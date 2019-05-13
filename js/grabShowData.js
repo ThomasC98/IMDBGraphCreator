@@ -78,11 +78,27 @@ $(function() {
       yVal = new Array();
 
       console.log("Season " + (i + 1) + " " + mapArray[i].size);
+      var seasonAverageNum = 0;
+      var startEpisode = episode;
 
       for (var p = 0; p < mapArray[i].size; p++) {
+        seasonAverageNum += mapArray[i].get(p);
         xVal.push(episode);
         yVal.push(mapArray[i].get(p));
         episode++;
+      }
+      seasonAverageNum = Number((seasonAverageNum / mapArray[i].size)).toFixed(2);
+
+      var seasonAvg = {
+        x: Array.apply(null, Array(mapArray[i].size)).map(function(x, i) {
+          return (i + startEpisode);
+        }),
+        y: Array.apply(null, Array(mapArray[i].size)).map(function(x, i) {
+          return (seasonAverageNum)
+        }),
+        mode: 'lines',
+        type: 'scatter',
+        name: "Season " + (i + 1) + " Avg"
       }
 
       console.log(data);
@@ -94,6 +110,7 @@ $(function() {
         name: "Season " + (i + 1)
       }
       data.push(spots);
+      data.push(seasonAvg);
     }
 
     var layout = {};
@@ -177,10 +194,10 @@ $(function() {
         return (i + 1);
       }),
       y: Array.apply(null, Array(showArray.length)).map(function(x, i) {
-        return Number(((slope * (i+1) + yInter).toFixed(2)));
+        return Number(((slope * (i + 1) + yInter).toFixed(2)));
       }),
       mode: 'lines',
-      name: "Mean Rating"
+      name: "Best Fit"
     };
 
     return bestFit;
