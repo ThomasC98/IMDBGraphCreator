@@ -61,8 +61,12 @@ $(function() {
     data.push(bestFit);
 
     var mean = {
-      x: [1, showArray.length],
-      y: [meanScore, meanScore],
+      x: Array.apply(null, Array(showArray.length)).map(function(x, i) {
+        return (i + 1);
+      }),
+      y: Array.apply(null, Array(showArray.length)).map(function(x, i) {
+        return meanScore;
+      }),
       mode: 'lines',
       name: "Mean Rating"
     };
@@ -169,10 +173,14 @@ $(function() {
     var yInter = ((scoreArray.reduce(add, 0) / n) - (slope * ((n * (n + 1)) / 2) / n));
 
     var bestFit = {
-      x: [1, n],
-      y: [Number(yInter.toFixed(2)), Number(((slope * n) + yInter).toFixed(2))],
+      x: Array.apply(null, Array(n)).map(function(x, i) {
+        return (i + 1);
+      }),
+      y: Array.apply(null, Array(showArray.length)).map(function(x, i) {
+        return Number(((slope * (i+1) + yInter).toFixed(2)));
+      }),
       mode: 'lines',
-      name: "Best Fit"
+      name: "Mean Rating"
     };
 
     return bestFit;
