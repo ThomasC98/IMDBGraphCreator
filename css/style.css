@@ -45,6 +45,15 @@ top:12.5%;
 {
   margin-left:5%;
 }
+#title
+{
+  position:relative;
+  top:2.5%;
+  left:20%;
+  font-size:2rem;
+  font-weight:normal;
+  float:left;
+}
 
 #output
 {

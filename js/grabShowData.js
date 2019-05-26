@@ -6,10 +6,48 @@ $(function() {
   var showArray = new Array(); // Used to hold the arrays of each episode's score
   var seasons; // Used to hold the number of seasons
   var bar; // The increasing bar that show's load %
+  var titleGrabbed = false;
 
   init();
 
+  // Initialize the progress bar
+  function init() {
+    bar = new ProgressBar.SemiCircle(container, {
+      strokeWidth: 6,
+      color: '#FFEA82',
+      trailColor: '#eee',
+      trailWidth: 1,
+      duration: 300,
+      svgStyle: null,
+      text: {
+        value: '',
+        alignToBottom: false
+      },
+      from: {
+        color: '#FFEA82'
+      },
+      to: {
+        color: '#ED6A5A'
+      },
+      // Set default step function for all animate calls
+      step: (state, bar) => {
+        bar.path.setAttribute('stroke', state.color);
+        var value = Math.round(bar.value() * 100);
+        if (value === 0) {
+          bar.setText('');
+        } else {
+          bar.setText(value);
+        }
 
+        bar.text.style.color = state.color;
+      }
+    });
+    bar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
+
+    bar.text.style.fontSize = '2rem';
+  }
+
+  // Used to check the key pattern of an IMDB TV id
   $("#showID").on("keypress", function() {
     if (!(checkPattern($("#showID").val()))) {
       $("#showID").css("color", "red");
@@ -23,13 +61,15 @@ $(function() {
   // if the id is valid then reenable at the end of the process
   $("#startCollection").on("click", function() {
     var tvID = $("#showID").val();
-    console.log(proxy + myUrl + $("#showID").val());
     if (checkPattern(tvID)) {
       // $("#startCollection").enabled(false);
+
       bar.animate(.01);
       $("#myDiv").empty();
+      titleGrabbed = false;
       mapArray = new Array();
       showArray = new Array();
+      $("#titleText").text("Show Title Here");
       findSeasonNums(proxy + myUrl + $("#showID").val());
     }
   });
@@ -39,15 +79,13 @@ $(function() {
   // This can easily be accomplished through a regex match
   function checkPattern(tvID) {
     if (tvID.toLowerCase().match(/(tt)(\d{7}|\d{6})$/g)) {
-      console.log("cool1");
       return true;
     } else {
-      console.log("cool2");
       return false;
     }
   }
 
-
+  // Makes the graph for a respective show by using IMDB page info
   function makeGraph(mapArray) {
     var content = $("#myDiv");
     var xVal;
@@ -55,7 +93,6 @@ $(function() {
     var data = new Array();
     var episode = 1;
     var meanScore = Number((showArray.reduce(add, 0) / showArray.length).toFixed(2));
-    console.log(meanScore);
 
     var bestFit = findLineBestFit(showArray); // Returns two points
     data.push(bestFit);
@@ -101,7 +138,6 @@ $(function() {
         name: "Season " + (i + 1) + " Avg"
       }
 
-      console.log(data);
       var spots = {
         x: xVal,
         y: yVal,
@@ -117,18 +153,18 @@ $(function() {
     Plotly.newPlot('myDiv', data, layout, {
       scrollZoom: true
     });
-    console.log("Done!");
   }
 
+  // Calls the information for that respective show's season
   function callData(url, season) {
     if (season != seasons + 1) {
-      console.log(url + season + "");
 
       $.get(url + season + "", function(data) {
         var dfd = jQuery.Deferred();
-        var episodeMap = fetchData(data);
-        mapArray.push(episodeMap);
+
+        mapArray.push(fetchData(data));
         bar.animate(season / seasons);
+
         return dfd.promise();
       }).then(function() {
         if (season != seasons + 1) {
@@ -136,53 +172,65 @@ $(function() {
         }
       });
     } else {
-      // console.log(mapArray);
       makeGraph(mapArray)
     }
   }
 
-  // TODO: Check for "The requested URL was not found on our server"
+  function callTitle(url) {
+    $.get(url, function(data) {
+      var dfd = jQuery.Deferred();
+      if (!(data.includes("The requested URL was not found on our server")) && !(titleGrabbed)) {
+        var titleCut = data.substring(data.indexOf('class="title_wrapper"') + 36, data.indexOf('</h1>')).replace('&nbsp;', '');
+        $("#titleText").text(titleCut);
+        titleGrabbed = true;
+      }
+      return dfd;
+    }).catch(function() {
+      console.log("Error Title");
+    })
+  }
+
   function fetchData(data) {
-    var index = 0;
-    var episodeMap = new Map();
-    var episodes_cutdown = data.substring(data.indexOf("list detail eplist"), data.indexOf("<hr>") + 3);
-    episodes_cutdown = episodes_cutdown.replace(/\s/g, '');
-    var split = episodes_cutdown.split("ipl-rating-star__total-votes");
-    for (var i = 0; i < split.length - 1; i++) {
-      var rating = Number(split[i].substring(split[i].length - 22, split[i].length - 19));
-      episodeMap.set(index, rating);
-      showArray.push(rating);
-      index++;
-      // console.log(rating);
+    if (!(data.includes("The requested URL was not found on our server"))) {
+      var index = 0;
+      var episodeMap = new Map();
+      var episodes_cutdown = data.substring(data.indexOf("list detail eplist"), data.indexOf("<hr>") + 3);
+      episodes_cutdown = episodes_cutdown.replace(/\s/g, '');
+      var split = episodes_cutdown.split("ipl-rating-star__total-votes");
+      for (var i = 0; i < split.length - 1; i++) {
+        var rating = Number(split[i].substring(split[i].length - 22, split[i].length - 19));
+        episodeMap.set(index, rating);
+        showArray.push(rating);
+        index++;
+      }
+      return episodeMap;
     }
-    return episodeMap;
+    return null;
   }
 
   function findSeasonNums(url) {
-    console.log(url);
+    var finalURL = proxy + myUrl + $("#showID").val();
     var promise = $.get(url, function(data) {
       var dfd = jQuery.Deferred();
-      // console.log("/title/" + $("#showID").val() + "/episodes?season=");
       var index = data.indexOf("/title/" + $("#showID").val() + "/episodes?season=");
       var numSeasons = data.substring(index + 30, index + 36).replace(/\D/g, '');;
       seasons = Number(numSeasons);
       if (seasons == "0") {
-        console.log("Error Found: Single Season Swap")
         seasons = 1;
       }
-      console.log("Num Seasons = " + seasons);
       return dfd.promise();
     }).then(function() {
-      var finalURL = proxy + myUrl + $("#showID").val() + "/episodes?season=";
-      callData(finalURL, 1);
+      callTitle(finalURL);
+    }).then(function() {
+      callData(finalURL + "/episodes?season=", 1);
     });
   }
 
-  // Below here is math JavaScript
-
+  // Below here is JavaScript Math
+  // Ex: tt4508902 (One Punch Man)
   // y = 0.03951x + 9.118182
-  // tt4508902
-  // Returns a data point for the Plotly graph that is the line of best fit
+
+  // Returns data points for the Plotly graph that is the line of best fit
   function findLineBestFit(scoreArray) {
     var n = scoreArray.length;
     var slope = solveSlope(scoreArray);
@@ -227,6 +275,7 @@ $(function() {
     return slope;
   }
 
+  // Multiply all scores by their respective season
   function multSum(scores) {
     var total = 0;
     for (var i = 0; i < scores.length; i++) {
@@ -235,44 +284,9 @@ $(function() {
     return total;
   }
 
+  // Used as the function to shorten array addition
   function add(a, b) {
     return a + b;
-  }
-
-
-  function init() {
-    bar = new ProgressBar.SemiCircle(container, {
-      strokeWidth: 6,
-      color: '#FFEA82',
-      trailColor: '#eee',
-      trailWidth: 1,
-      duration: 300,
-      svgStyle: null,
-      text: {
-        value: '',
-        alignToBottom: false
-      },
-      from: {
-        color: '#FFEA82'
-      },
-      to: {
-        color: '#ED6A5A'
-      },
-      // Set default step function for all animate calls
-      step: (state, bar) => {
-        bar.path.setAttribute('stroke', state.color);
-        var value = Math.round(bar.value() * 100);
-        if (value === 0) {
-          bar.setText('');
-        } else {
-          bar.setText(value);
-        }
-
-        bar.text.style.color = state.color;
-      }
-    });
-    bar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
-    bar.text.style.fontSize = '2rem';
   }
 
 });
