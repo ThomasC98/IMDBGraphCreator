@@ -1,68 +1,105 @@
-#myDiv,.main-svg
-{
-  width:100%;
+
+body {
+  background-color: #334587;
+  color: white;
+  
 }
 
-#input
+/*Information Field*/
+
+#info
 {
   position:relative;
-  left:7.5%;
-  /* width:22.5%; */
-  height:20%;
+  top:1em;
+  left:10em;
+  width:20em;
+  height:15em;
   border-style: solid;
   border-color:black;
   border-width:2px;
   float:left;
 }
 
-#showID
+#infoText1,#infoText2, #infoText2 *
 {
-  margin-left:5%;
-  margin-top:5%;
-  width:30%;
+  margin:1em;
+  font-weight:bold;
+}
+
+/*Input Fields*/
+
+h2
+{
+  font-size:1em;
+  font-weight:bold;
+  text-align: center;
+  line-height:0em;
+  padding:0em;
+  margin-top:2em;
+  margin-bottom:0em;
+}
+
+#input
+{
+  position:relative;
+  float:left;
+  top:1em;
+  left:5em;
+  width:20em;
+  height:20em;
+  border-style: solid;
+  border-color:black;
+  border-width:2px;
+  border-radius:2px;
+}
+
+label[for='text']
+{
+  color:white;
+}
+
+.mdl-textfield
+{
+  text-align: center;
+  color:white;
+  width:10em;
+  float: left;
+  margin-left:4em;
 }
 
 #container
 {
-width:75%;
-margin-left:12.5%;
-top:12.5%;
-}
-
-#info
-{
-  position:relative;
-  left:10%;
-  width:17.5%;
-  height:20%;
-  border-style: solid;
-  border-color:red;
-  border-width:2px;
+  width:15em;
   float:left;
+  margin-left:2.5em;
+  margin-top:1em;
 }
 
-#infoText1,#infoText2
+#startCollection
 {
-  margin-left:5%;
+  float:left;
+  margin-left:4em;
+  text-align: center;
 }
-#title
+
+/*Graph Field*/
+
+#title *
 {
-  position:relative;
-  top:2.5%;
-  left:20%;
-  font-size:2rem;
-  font-weight:normal;
+  font-size:7rem;
+  margin-top:1em;
+  margin-left:4em;
   float:left;
 }
 
 #output
 {
   position:relative;
-  top:25%;
-  left:5%;
-  width:90%;
-  height:50%;
+  top:25em;
+  left:5em;
+  width:140em;
+  height:32.2em;
   border-style: solid;
-  border-color:red;
+  border-color:black;
   border-width:2px;
 }

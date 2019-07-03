@@ -5,17 +5,28 @@
 -->
 
 <head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <script src="js/grabShowData.js"></script>
-  <script src="js/progressbar.js"></script>
-  <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.rawgit.com/nnattawat/flip/master/dist/jquery.flip.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="js/grabShowData.js"></script>
+    <script src="js/progressbar.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 
 <body>
-  <div id="input">
-    <input id="showID"></input>
-    <button id="startCollection">Start Collection</button>
+  <div id="input" >
+    <h2>Show ID Input</h2>
+    <div class="mdl-textfield mdl-js-textfield">
+        <input class = "mdl-textfield__input" type = "text" id="showID">
+        <label class = "mdl-textfield__label" for = "text">Ex: tt0944947</label>
+        <span class = "mdl-textfield__error">Number required!</span>
+      </div>
+    <button id="startCollection" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accentmdl-button--colored" >Start Collection</button>
     <div id="container"></div>
   </div>
 

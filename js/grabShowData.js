@@ -47,16 +47,6 @@ $(function() {
     bar.text.style.fontSize = '2rem';
   }
 
-  // Used to check the key pattern of an IMDB TV id
-  $("#showID").on("keypress", function() {
-    if (!(checkPattern($("#showID").val()))) {
-      $("#showID").css("color", "red");
-    } else {
-      $("#showID").css("color", "black");
-    }
-  });
-
-
   // On the click of the button will activate the process & disable the button
   // if the id is valid then reenable at the end of the process
   $("#startCollection").on("click", function() {
